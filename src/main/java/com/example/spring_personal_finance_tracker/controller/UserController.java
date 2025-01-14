@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -68,6 +69,19 @@ public class UserController {
     }
 
     /**
+     * Retrieves a user by their email address.
+     *
+     * @param email the email address of the user to retrieve
+     * @return a ResponseEntity containing the User object if found, or a ResponseEntity with a NOT_FOUND status if the user is not found
+     */
+    @GetMapping("/userByEmail/{email}")
+    public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+        return userService.getUserByEmail(email)
+                .map(user -> ResponseEntity.ok().body(user))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Registers a new user.
      *
      * @param user the user to be registered
@@ -75,12 +89,20 @@ public class UserController {
      *         or a ResponseEntity with a BAD_REQUEST status if registration fails
      */
     @PostMapping("/registerNewUser")
-    public ResponseEntity<User> registerNewUser(User user) {
+    public ResponseEntity<Object> registerNewUser(@RequestBody User user) {
+
+        System.out.println("Received User: " + user.toString());
+
+        if (user == null || user.getUsername() == null || user.getEmail() == null || user.getPassword() == null || user.getFirstName() == null || user.getLastName() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user data");
+        }
         try {
             userService.registerNewUser(user); 
             return ResponseEntity.ok().body(user); 
         }
-        catch(Exception e) {
+        catch(IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username or email already taken");
+        } catch(Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); 
         }
     }
@@ -117,9 +139,9 @@ public class UserController {
      * @return a ResponseEntity indicating the result of the update operation
      */
     @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable("userId") Long userId, String firstName, String lastName, String username, String role, String password) {
+    public ResponseEntity<User> updateUser(@PathVariable("userId") Long userId, String email, String firstName, String lastName, String username, String role, String password) {
         try{
-            userService.updateUser(userId, firstName, lastName, username, role, password);
+            userService.updateUser(userId, firstName, lastName, username, email, role, password);
             return ResponseEntity.ok().build(); 
         }
         catch(Exception e) {

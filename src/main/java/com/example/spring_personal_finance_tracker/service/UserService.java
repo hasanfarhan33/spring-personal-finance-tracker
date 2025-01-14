@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.spring_personal_finance_tracker.model.User;
 import com.example.spring_personal_finance_tracker.repository.UserRepository;
@@ -14,12 +15,11 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
-    private final UserRepository userRepository; 
-    private final PasswordEncoder passwordEncoder; 
+    private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository; 
-        this.passwordEncoder = passwordEncoder; 
     }
 
     // GET ALL USERS 
@@ -37,17 +37,29 @@ public class UserService {
         return userRepository.findByUsername(username); 
     }
 
+    // GET ONE USER BY EMAIL 
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email); 
+    }
+
     // ADD A USER 
     public void registerNewUser(User user) {
-        Optional<User> userOptional = userRepository.findByUsername(user.getUsername()); 
 
-        if(userOptional.isPresent()) {
-            System.out.println("The username is taken");
+        System.out.println(user.toString());
+
+        Optional<User> usernameOptional = userRepository.findByUsername(user.getUsername()); 
+        Optional<User> emailOptional = userRepository.findByEmail(user.getEmail()); 
+
+        if(usernameOptional.isPresent()) {
+            logger.warn("The username is taken");
             throw new IllegalStateException("Username \"" + user.getUsername() + "\" is already taken"); 
         }
-        
-        // Encrypt the password
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        if(emailOptional.isPresent()) {
+            logger.warn("The email is taken");
+            throw new IllegalStateException("Email \"" + user.getEmail() + "\" is already taken"); 
+        }
+
         userRepository.save(user); 
     }
 
@@ -56,7 +68,7 @@ public class UserService {
         Optional<User> userOptional = userRepository.findById(userId); 
 
         if(!userOptional.isPresent()) {
-            System.out.println("The user does not exist"); 
+            logger.warn("The user does not exist");
             throw new IllegalStateException("The user with user ID" + userId + " does not exist"); 
         }
 
@@ -65,7 +77,7 @@ public class UserService {
 
     // UPDATE A USER 
     @Transactional
-    public void updateUser(Long userId, String firstName, String lastName, String username, String role, String password) {
+    public void updateUser(Long userId, String firstName, String lastName, String username, String email, String role, String password) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException(username + " does not exist"));
 
         // Dealing with firstName
@@ -90,15 +102,29 @@ public class UserService {
             user.setUsername(username); 
         }
 
+        // Dealing with email 
+        if(email != null && email.length() > 0 && !Objects.equals(email, user)) {
+            Optional<User> userOptional = userRepository.findByEmail(email); 
+
+            if(userOptional.isPresent()) {
+                System.out.println("The email is taken");
+                throw new IllegalStateException("Email \"" + email + "\" is already taken");
+            }
+
+            user.setEmail(email); 
+        }
+
         // Dealing with role
         if(role != null && role.length() > 0 && !Objects.equals(role, user)) {
             user.setRole(role); 
         }
 
         // Dealing with password
-            user.setPassword(passwordEncoder.encode(password)); 
-            user.setPassword(password); 
+        if(password != null && password.length() > 0 && !Objects.equals(password, user)) {
+            user.setPassword(password);
+
         }
     }
+}
 
 
