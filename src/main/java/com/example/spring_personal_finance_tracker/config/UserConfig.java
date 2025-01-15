@@ -9,6 +9,8 @@ import com.example.spring_personal_finance_tracker.model.User;
 import com.example.spring_personal_finance_tracker.repository.UserRepository;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Configuration class for initializing user data in the database.
@@ -17,13 +19,14 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class UserConfig {
+
     @Bean
-    CommandLineRunner commandLineRunner(UserRepository userRepository) {
+    CommandLineRunner commandLineRunner(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             User farhan = new User(
                 "hasanfarhan33", 
                 "hasanfarhan33@gmail.com", 
-                "Farhan@1998", 
+                passwordEncoder.encode("Farhan@1998"), 
                 "Farhan", 
                 "Hasan", 
                 "USER");
@@ -31,14 +34,26 @@ public class UserConfig {
             User admin = new User(
                 "admin", 
                 "admin@gmail.com", 
-                "1234", 
+                passwordEncoder.encode("1234"), 
                 "Admin", 
                 "Admin", 
                 "ADMIN"); 
             
-            User rory = new User("roryPlaysEldenRing", "rory@gmail.com", "Rory@2002", "Rory", "McDonnell", "USER");
+            User rory = new User(
+                "roryPlaysEldenRing", 
+                "rory@gmail.com", 
+                passwordEncoder.encode("Rory@2002"), 
+                "Rory", 
+                "McDonnell", 
+                "USER");
 
-            User michael = new User("michaelIsTall", "michael.guerin@gmail.com", "Michael@2000", "Michael", "Guerin", "USER"); 
+            User michael = new User(
+                "michaelIsTall", 
+                "michael.guerin@gmail.com", 
+                passwordEncoder.encode("Michael@2000"), 
+                "Michael", 
+                "Guerin", 
+                "USER"); 
 
             userRepository.saveAll(List.of(farhan, admin, rory, michael)); 
         };

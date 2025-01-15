@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +17,12 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
+    @Autowired
     private final UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; 
+
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public UserService(UserRepository userRepository) {
@@ -59,6 +66,10 @@ public class UserService {
             logger.warn("The email is taken");
             throw new IllegalStateException("Email \"" + user.getEmail() + "\" is already taken"); 
         }
+
+        // Encrypt the password
+        String hashedPassword = passwordEncoder.encode(user.getPassword()); 
+        user.setPassword(hashedPassword); 
 
         userRepository.save(user); 
     }
@@ -121,8 +132,8 @@ public class UserService {
 
         // Dealing with password
         if(password != null && password.length() > 0 && !Objects.equals(password, user)) {
-            user.setPassword(password);
-
+            String hashedPassword = passwordEncoder.encode(password); 
+            user.setPassword(hashedPassword); 
         }
     }
 }

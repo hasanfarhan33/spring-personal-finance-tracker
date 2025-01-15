@@ -3,6 +3,7 @@ package com.example.spring_personal_finance_tracker.model;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * Represents a user in the personal finance tracker application.
@@ -50,14 +51,22 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; 
+    @Column(unique = true, nullable = false)
     private String username;
+    @Column(unique = true, nullable = false)
     private String email;  
+    @Column(nullable = false)
     private String password; 
-    private String firstName; 
+    @Column(nullable = false)
+    private String firstName;
+    @Column(nullable = false) 
     private String lastName; 
-    private String role;
+    @Column(nullable = false)
+    private String role; 
+    @Column(nullable = false)
     private Timestamp createdAt;
 
+    // Default constructor
     public User() {
 
     }
