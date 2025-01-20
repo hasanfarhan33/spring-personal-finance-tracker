@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a user in the personal finance tracker application.
@@ -46,7 +48,7 @@ import java.time.LocalDateTime;
  * - toString(): Returns a string representation of the user.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "USERS")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,8 +65,11 @@ public class User {
     private String lastName; 
     @Column(nullable = false)
     private String role; 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) 
+    private List<Transaction> transactions;
 
     // Default constructor
     public User() {
@@ -161,13 +166,29 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    @Override
-    public String toString() {
-        return String.format(
-            "User{id=%d, username='%s', email='%s', password='%s', firstName='%s', lastName='%s', role='%s', createdAt='%s'}",
-            id, username, email, password, firstName, lastName, role, createdAt
-        );
+
+    public List<Transaction> getTransactions() {
+        return this.transactions;
     }
 
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+
+    @Override
+    public String toString() {
+        return "{" +
+            " id='" + getId() + "'" +
+            ", username='" + getUsername() + "'" +
+            ", email='" + getEmail() + "'" +
+            ", password='" + getPassword() + "'" +
+            ", firstName='" + getFirstName() + "'" +
+            ", lastName='" + getLastName() + "'" +
+            ", role='" + getRole() + "'" +
+            ", createdAt='" + getCreatedAt() + "'" +
+            ", transactions='" + getTransactions() + "'" +
+            "}";
+    }
     
 }
