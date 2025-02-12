@@ -26,7 +26,7 @@ public class TransactionService {
 
     // GET ONE TRANSACTION BY ID
     public Optional<Transaction> getTransactionById(Long transactionId) {
-        return transactionRepository.findById(transactionId)
+        return transactionRepository.findById(transactionId);
     }
 
     // GET TRANSACTION BY USER ID 
